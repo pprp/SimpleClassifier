@@ -6,8 +6,9 @@ import argparse
 
 from dataloader import train_dataloader, valid_dataloader, valid_dataset
 from config import cfg
-from model import SimpleConv, DenseConv, DualRes18
+from model import SimpleConv, DenseConv, DualRes18, DenseConvWithDropout
 from utils.visdom import Visualizer
+import model
 
 def train(model, optimizer, criterion, scheduler):
     model.train()
@@ -51,7 +52,7 @@ def train(model, optimizer, criterion, scheduler):
         vis.plot_many_stack({"test_acc":test_acc.item()})
 
 
-        if epoch % 10 == 0 and epoch > 0:
+        if epoch % 5 == 0 and epoch > 0:
             torch.save(
                 model.state_dict(),
                 os.path.join(save_folder,
@@ -90,7 +91,9 @@ if __name__ == "__main__":
         os.makedirs(save_folder)
 
     # make basic model
-    model = DualRes18(cfg.NUM_CLASSES)
+    # from model import SimpleConv, DenseConv, DualRes18, DenseConvWithDropout
+    # model = DenseConvWithDropout(cfg.NUM_CLASSES)
+    model = getattr('model', 'SimpleConv')(cfg.NUM_CLASSES)
 
     # load weight
     pretrained_path = cfg.PRETRAINED_MODEL_PATH

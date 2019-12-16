@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 from torchvision import models
 from torch.nn import init
-
+from config import cfg
+import os
 
 def weights_init_classifier(m):
     classname = m.__class__.__name__
@@ -121,6 +122,19 @@ class SimpleConv(nn.Module):
         x = self.classifier(x)
         return x
 
+    def load(self, path):
+        self.load_state_dict(torch.load(path))
+
+    def save(self, name=None):
+        if name is None:
+            folder = os.path.join('weights', cfg.SAVE_FOLDER_NAME)
+            if not os.path.exists(folder):
+                os.mkdir(folder)
+            import time
+            name = time.strftime(folder+'/'+'%m%d_%H:%M:%S.pth')
+        t.save(self.state_dict(), name)
+        return name
+
 
 class DenseConv(nn.Module):
     def __init__(self, num_classes=10):
@@ -136,6 +150,22 @@ class DenseConv(nn.Module):
         return x
 
 
+class DenseConvWithDropout(nn.Module):
+    def __init__(self, num_classes=10):
+        super(DenseConvWithDropout, self).__init__()
+        dense = models.resnet18(pretrained=True)
+        self.base = nn.Sequential(*list(dense.children())[:-1])
+        self.drop = nn.Dropout(0.5)
+        self.classifier = nn.Linear(512, num_classes)
+
+    def forward(self, x):
+        x = self.base(x)
+        x = torch.squeeze(x)
+        x = self.drop(x)
+        x = self.classifier(x)
+        return x
+
+
 class DualRes18(nn.Module):
     def __init__(self, num_classes=10):
         super(DualRes18, self).__init__()
@@ -143,11 +173,7 @@ class DualRes18(nn.Module):
         self.base = nn.Sequential(*list(res.children())[:-3])
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.maxpool = nn.AdaptiveMaxPool2d(1)
-        self.classifier = ClassBlock(512,
-                                     num_classes,
-                                     dropout=True,
-                                     relu=True,
-                                     num_bottleneck=256)
+        self.classifier = nn.Linear(512, num_classes)
 
     def forward(self, x):
         x = self.base(x)
@@ -166,11 +192,12 @@ class DualRes50(nn.Module):
         self.base = nn.Sequential(*list(res.children())[:-3])
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.maxpool = nn.AdaptiveMaxPool2d(1)
-        self.classifier = ClassBlock(1024,
-                                     num_classes,
-                                     dropout=True,
-                                     relu=True,
-                                     num_bottleneck=256)
+        self.classifier = nn.Linear(1024, num_classes)
+        #  ClassBlock(1024,
+        #              num_classes,
+        #              dropout=True,
+        #              relu=True,
+        #              num_bottleneck=256)
 
     def forward(self, x):
         x = self.base(x)
