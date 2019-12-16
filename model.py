@@ -5,12 +5,12 @@ from torch.nn import init
 from config import cfg
 import os
 
+
 def weights_init_classifier(m):
     classname = m.__class__.__name__
     if classname.find('Linear') != -1:
         init.normal_(m.weight.data, std=0.001)
         init.constant_(m.bias.data, 0.0)
-
 
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
@@ -131,7 +131,7 @@ class SimpleConv(nn.Module):
             if not os.path.exists(folder):
                 os.mkdir(folder)
             import time
-            name = time.strftime(folder+'/'+'%m%d_%H:%M:%S.pth')
+            name = time.strftime(folder + '/' + '%m%d_%H:%M:%S.pth')
         t.save(self.state_dict(), name)
         return name
 

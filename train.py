@@ -10,6 +10,7 @@ from model import SimpleConv, DenseConv, DualRes18, DenseConvWithDropout
 from utils.visdom import Visualizer
 import model
 
+
 def train(model, optimizer, criterion, scheduler):
     model.train()
     vis = Visualizer(env='main')
@@ -44,13 +45,12 @@ def train(model, optimizer, criterion, scheduler):
                     "Epoch: %d/%d || batch:%03d/%02d || batch_loss: %.3f || train_acc: %.3f || lr: %.7f"
                     % (epoch, cfg.MAX_EPOCH, batch, len(train_dataloader),
                        batch_loss, train_acc, optimizer.param_groups[0]['lr']))
-                vis.plot_many_stack({'batch_loss':batch_loss})
+                vis.plot_many_stack({'batch_loss': batch_loss})
                 vis.plot_many_stack({"train_acc": train_acc.item()})
         # test
         test_acc = test(model)
         print("Epoch: %d || test_acc: %.3f" % (epoch, test_acc))
-        vis.plot_many_stack({"test_acc":test_acc.item()})
-
+        vis.plot_many_stack({"test_acc": test_acc.item()})
 
         if epoch % 5 == 0 and epoch > 0:
             torch.save(

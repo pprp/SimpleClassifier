@@ -6,15 +6,16 @@ import cv2
 from model import SimpleConv, DenseConv
 from config import cfg
 
-
 parser = argparse.ArgumentParser("test image path")
-parser.add_argument('--image_path', type=str, default="./data/test", help="test image path")
+parser.add_argument('--image_path',
+                    type=str,
+                    default="./data/test",
+                    help="test image path")
 parser.add_argument('--weight',
                     type=str,
                     default='./weights/model1/dense121_2019_12_7_10.pth',
                     help='which weights to load')
 args = parser.parse_args()
-
 
 model = DenseConv(cfg.NUM_CLASSES)
 if args.weight is not "":
@@ -44,7 +45,7 @@ for jpg_name in os.listdir(args.image_path):
         # print(img.shape, img_tensor.shape)
 
 # print(img_tensor.shape)
-img_tensor = img_tensor.permute(dims=[0,3,1,2])
+img_tensor = img_tensor.permute(dims=[0, 3, 1, 2])
 # print(img_tensor.shape)
 
 with torch.no_grad():
@@ -54,6 +55,5 @@ with torch.no_grad():
     out = model(img_tensor)
     prediction = torch.max(out, 1)[1]
     print(prediction.shape)
-    for i,p in enumerate(prediction):
+    for i, p in enumerate(prediction):
         print(i, name_image[i], "\t", labels2classes[str(p.cpu().numpy())])
-    
